@@ -25,3 +25,7 @@ The unicorn runs the fastapi instance, main is the name of the python file that 
 ```bash
 uvicorn main:app
 ```
+
+```bash
+uvicorn main:app --reload
+```
