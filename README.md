@@ -29,3 +29,9 @@ uvicorn main:app
 ```bash
 uvicorn app.main:app --reload
 ```
+
+## To removed previously tracked files
+
+```bash
+git rm -r --cached .
+```
