@@ -1,108 +1,132 @@
-from fastapi import FastAPI, Response, status, HTTPException
-from fastapi.params import Body
+from fastapi import FastAPI, HTTPException, status, Body, Response
 from pydantic import BaseModel, Field
 from typing import Optional
 from random import randrange
 
 app = FastAPI()
 
+# ----------------------------
+# Pydantic model representing a blog post
+# ----------------------------
 class Post(BaseModel):
-    id: int = Field(default_factory=lambda: randrange(0, 1_000_000)) # generates a value at the time of model creation
+    # ID is automatically generated using a random number
+    id: int = Field(default_factory=lambda: randrange(0, 1_000_000))
     title: str
     content: str
     published: bool = True
-    # rating: float | None = None
-    rating: Optional[float] = None
+    rating: Optional[float] = None  # Optional rating field
 
-class Storage():
+
+# ----------------------------
+# In-memory storage class using a dictionary for fast access
+# ----------------------------
+class Storage:
     def __init__(self):
-        self.posts = []
+        # Dictionary for fast lookup and deletion by ID
+        self.posts = {}  # Format: {id: Post}
+
+    def generate_unique_id(self):
+        # Generates a unique ID that is not already in use
+        while True:
+            new_id = randrange(0, 1_000_000)
+            if new_id not in self.posts:
+                return new_id
 
     def add_post(self, post: Post):
-        self.posts.append(post)
+        # Ensure ID is unique before adding
+        if post.id in self.posts:
+            post.id = self.generate_unique_id()
+        self.posts[post.id] = post
 
     def get_posts(self):
-        return self.posts
-    
-    def get_post(self, id: int):
-        for post in self.posts:
-            if post["id"] == id:
-                return post
-        return None
-    
-    def delete_post(self, id: int):
-        for index, post in enumerate(self.posts):
-            if post["id"] == id:
-                self.posts.pop(index)
-                return True
-        return False
-    
-storage = Storage()
+        # Return all posts as a list
+        return list(self.posts.values())
 
-storage.add_post(Post(title="Post 1", content="Content 1").model_dump())
-storage.add_post(Post(title="Post 2", content="Content 2").model_dump())
+    def get_post(self, id: int):
+        # Return a specific post by ID, or None if not found
+        return self.posts.get(id)
+
+    def delete_post(self, id: int):
+        # Delete a post by ID and return the deleted post or None
+        return self.posts.pop(id, None)
+
+
+# ----------------------------
+# Initialize with some test data
+# ----------------------------
+storage = Storage()
+storage.add_post(Post(title="Post 1", content="Content 1"))
+storage.add_post(Post(title="Post 2", content="Content 2"))
+
+
+# ----------------------------
+# FastAPI Endpoints
+# ----------------------------
 
 @app.get("/")
-async def root():
-    return {"message": "Welcome to my api"}
+def root():
+    """
+    Root route returns a simple welcome message.
+    """
+    return {"message": "Welcome to my API"}
 
 
 @app.get("/posts")
 def get_posts():
-    return {"data": storage.get_posts()}
+    """
+    Retrieve all blog posts.
+    Returns a list of all stored posts.
+    """
+    return {"data": [post.model_dump() for post in storage.get_posts()]}
+
+
+@app.get("/posts/{id}")
+def get_post(id: int):
+    """
+    Get a post by its unique ID.
+    If the post exists, returns it; otherwise, raises a 404 error.
+    """
+    post = storage.get_post(id)
+    if not post:
+        # Return 404 if not found
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
+    return {"data": post.model_dump()}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_posts(payload: Post = Body(...)):
+def create_post(payload: Post = Body(...)):
     """
-    Create a post with the given title and content.
+    Create a new blog post with the given title and content.
+    The post is validated using Pydantic and added to the in-memory storage.
     """
-    # Validate the payload using Pydantic
-    # payload.dict() To convert pydantic to dict
-    post = payload.model_dump() # To convert pydantic to dict in v2.0
-    storage.add_post(post) # Simulate saving the post to a database or processing it 
-    print(post)
-    return {
-        "data": post
-        }
-
-def find_post(id: int):
-    """
-    Find a post by id.
-    """
-    for post in storage.get_posts():
-        if post["id"] == id:
-            return post
-    return None
-
-@app.get("/posts/{id}")
-def get_post(id: int, response: Response):
-    """
-    Get a post by id.
-    """
-    post = find_post(id)
-    # If the post is found, return it
-    if post:
-        return {"data": post}
-    # If the post is not found, return a 404 error
-    # response.status_code = status.HTTP_404_NOT_FOUND
-    # return {"message": f"Post with id: {id} not found"}
-    # OR raise an HTTPException
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} not found")
+    storage.add_post(payload)
+    return {"data": payload.model_dump()}
 
 
 @app.get("/posts/latest/recent")
 def get_latest_post():
     """
-    Get the latest post.
+    Get the latest (most recently added) post.
+    Returns the last post added to the storage.
+    If no posts exist, raises a 404 error.
     """
-    return {"data": storage.get_posts()[-1]}  
+    posts = storage.get_posts()
+    if not posts:
+        # Handle the case where no posts exist
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No posts available")
+    return {"data": posts[-1].model_dump()}
+
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
     """
-    Delete a post by id.
+    Delete a post by its unique ID.
+    If the post is found, it is removed from storage and a 204 status code is returned.
+    If the post is not found, a 404 error is raised.
     """
-    if storage.delete_post(id):
-        return # {"message": f"Post with id: {id} deleted successfully"}
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} not found") 
+    deleted = storage.delete_post(id)
+    if not deleted:
+        # Raise 404 if post doesn't exist
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
+    # Return a 204 response without any content
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
