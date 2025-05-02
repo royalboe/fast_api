@@ -2,6 +2,20 @@ from fastapi import FastAPI, HTTPException, status, Body, Response
 from pydantic import BaseModel, Field
 from typing import Optional
 from random import randrange
+import psycopg
+from psycopg.rows import dict_row
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+DB_NAME = os.getenv("DB_NAME")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_USER = os.getenv("DB_USER")
+
+print(DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT, DB_USER)
 
 app = FastAPI()
 
@@ -15,6 +29,28 @@ class Post(BaseModel):
     content: str
     published: bool = True
     rating: Optional[float] = None  # Optional rating field
+
+
+# ----------------------------
+# Database connection function
+# ----------------------------
+try:
+    with psycopg.connect(
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT,
+    ) as conn:
+        with conn.cursor(row_factory=dict_row) as cursor:
+            # Example query to fetch all posts
+            print("Connected to the database")
+            # cursor.execute("SELECT * FROM fastapi")
+            # posts = cursor.fetchall()
+            # print(posts)  # Print fetched posts for debugging
+except Exception as e:
+    print(f"Error connecting to the database: {e}")
+
 
 
 # ----------------------------

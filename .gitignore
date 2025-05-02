@@ -1,0 +1,10 @@
+.env
+./app/__pycache__/
+./app/*.pyc
+./app/*.pyo
+./app/*.pyd
+./app/*.db
+./app/*.sqlite3
+./app/*.log
+__pycache__
+venv
