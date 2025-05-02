@@ -24,6 +24,19 @@ class Storage():
     def get_posts(self):
         return self.posts
     
+    def get_post(self, id: int):
+        for post in self.posts:
+            if post["id"] == id:
+                return post
+        return None
+    
+    def delete_post(self, id: int):
+        for index, post in enumerate(self.posts):
+            if post["id"] == id:
+                self.posts.pop(index)
+                return True
+        return False
+    
 storage = Storage()
 
 storage.add_post(Post(title="Post 1", content="Content 1").model_dump())
@@ -39,7 +52,7 @@ def get_posts():
     return {"data": storage.get_posts()}
 
 
-@app.post("/posts")
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_posts(payload: Post = Body(...)):
     """
     Create a post with the given title and content.
@@ -67,9 +80,10 @@ def get_post(id: int, response: Response):
     """
     Get a post by id.
     """
-    for post in storage.get_posts():
-        if post["id"] == id:
-            return {"data": post}
+    post = find_post(id)
+    # If the post is found, return it
+    if post:
+        return {"data": post}
     # If the post is not found, return a 404 error
     # response.status_code = status.HTTP_404_NOT_FOUND
     # return {"message": f"Post with id: {id} not found"}
@@ -82,4 +96,13 @@ def get_latest_post():
     """
     Get the latest post.
     """
-    return {"data": storage.get_posts()[-1]}    
+    return {"data": storage.get_posts()[-1]}  
+
+@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id: int):
+    """
+    Delete a post by id.
+    """
+    if storage.delete_post(id):
+        return # {"message": f"Post with id: {id} deleted successfully"}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} not found") 
