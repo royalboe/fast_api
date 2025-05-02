@@ -130,3 +130,21 @@ def delete_post(id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
     # Return a 204 response without any content
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
+def update_post(id: int, payload: Post = Body(...)):
+    """
+    Update an existing post by its unique ID.
+    If the post exists, it is updated with the new data; otherwise, a 404 error is raised.
+    """
+    post = storage.get_post(id)
+    if not post:
+        # Raise 404 if post doesn't exist
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
+    # Update the post with new data
+    post.title = payload.title
+    post.content = payload.content
+    post.published = payload.published
+    post.rating = payload.rating
+    return {"data": post.model_dump()}
