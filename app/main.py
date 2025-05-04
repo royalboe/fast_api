@@ -6,6 +6,7 @@ import psycopg
 from psycopg.rows import dict_row
 from dotenv import load_dotenv
 import os
+# from contextlib import asynccontextmanager
 
 load_dotenv()
 
@@ -34,22 +35,37 @@ class Post(BaseModel):
 # ----------------------------
 # Database connection function
 # ----------------------------
+def connect_to_db():
+    """
+    Establish a connection to the PostgreSQL database using psycopg.
+    Returns a connection object.
+    """
+    return psycopg.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT,
+        )
+
 try:
-    with psycopg.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-    ) as conn:
-        with conn.cursor(row_factory=dict_row) as cursor:
-            # Example query to fetch all posts
-            print("Connected to the database")
-            # cursor.execute("SELECT * FROM fastapi")
-            # posts = cursor.fetchall()
-            # print(posts)  # Print fetched posts for debugging
+    with connect_to_db() as conn:
+        print("Database connected")
+        # with conn.cursor() as cursor:
+        #     cursor.execute("""
+        #         CREATE TABLE IF NOT EXISTS fastapi (
+        #             id SERIAL PRIMARY KEY,
+        #             title TEXT NOT NULL,
+        #             content TEXT NOT NULL,
+        #             published BOOLEAN DEFAULT TRUE,
+        #             rating FLOAT
+        #         );
+        #     """)
+        #     conn.commit()
+        #     print("Database connected and table created")
 except Exception as e:
-    print(f"Error connecting to the database: {e}")
+        print(f"Error during DB startup: {e}")
+        
 
 
 
@@ -113,20 +129,35 @@ def get_posts():
     Retrieve all blog posts.
     Returns a list of all stored posts.
     """
-    return {"data": [post.model_dump() for post in storage.get_posts()]}
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(row_factory=dict_row) as cursor:
+                cursor.execute("SELECT * FROM posts")
+                posts = cursor.fetchall()
+    except Exception as e:
+        print(f"Error fetching posts: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
+    return {"data": posts}
 
 
-@app.get("/posts/{id}")
-def get_post(id: int):
+@app.get("/posts/{post_id}")
+def get_post(post_id: int):
     """
     Get a post by its unique ID.
     If the post exists, returns it; otherwise, raises a 404 error.
     """
-    post = storage.get_post(id)
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(row_factory=dict_row) as cursor:
+                cursor.execute("SELECT * FROM posts WHERE id = %s", (post_id,))
+                post = cursor.fetchone()
+    except Exception as e:
+        print(f"Error fetching post: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
     if not post:
         # Return 404 if not found
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
-    return {"data": post.model_dump()}
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+    return {"data": post}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
@@ -135,8 +166,22 @@ def create_post(payload: Post = Body(...)):
     Create a new blog post with the given title and content.
     The post is validated using Pydantic and added to the in-memory storage.
     """
-    storage.add_post(payload)
-    return {"data": payload.model_dump()}
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(row_factory=dict_row) as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO 
+                    posts (title, content, published, rating) 
+                    VALUES (%s, %s, %s, %s) RETURNING * 
+                    """, 
+                    (payload.title, payload.content, payload.published, payload.rating)
+                    )
+                new_post = cursor.fetchone()
+    except Exception as e:
+        print(f"Error fetching posts: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
+    return {"data": new_post}
 
 
 @app.get("/posts/latest/recent")
@@ -146,11 +191,19 @@ def get_latest_post():
     Returns the last post added to the storage.
     If no posts exist, raises a 404 error.
     """
-    posts = storage.get_posts()
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(row_factory=dict_row) as cursor:
+                cursor.execute("SELECT * FROM posts ORDER BY id DESC LIMIT 5")
+                posts = cursor.fetchall()
+    except Exception as e:
+        print(f"Error fetching posts: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
+
     if not posts:
         # Handle the case where no posts exist
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No posts available")
-    return {"data": posts[-1].model_dump()}
+    return {"data": posts}
 
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -160,27 +213,48 @@ def delete_post(id: int):
     If the post is found, it is removed from storage and a 204 status code is returned.
     If the post is not found, a 404 error is raised.
     """
-    deleted = storage.delete_post(id)
-    if not deleted:
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(row_factory=dict_row) as cursor:
+                cursor.execute("DELETE FROM posts WHERE id = %s RETURNING *", (id, ))
+                deleted_post = cursor.fetchone()
+    except Exception as e:
+        print(f"Error deleting post: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
+    # Check if the post was deleted
+    if not deleted_post:
         # Raise 404 if post doesn't exist
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
     # Return a 204 response without any content
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
-def update_post(id: int, payload: Post = Body(...)):
+@app.put("/posts/{post_id}", status_code=status.HTTP_202_ACCEPTED)
+def update_post(post_id: int, payload: Post = Body(...)):
     """
     Update an existing post by its unique ID.
     If the post exists, it is updated with the new data; otherwise, a 404 error is raised.
     """
-    post = storage.get_post(id)
-    if not post:
-        # Raise 404 if post doesn't exist
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
-    # Update the post with new data
-    post.title = payload.title
-    post.content = payload.content
-    post.published = payload.published
-    post.rating = payload.rating
-    return {"data": post.model_dump()}
+    try:
+        with connect_to_db() as conn:
+            with conn.cursor(row_factory=dict_row) as cursor:
+                cursor.execute(
+                    """
+                    UPDATE posts
+                    SET title = %s, content = %s, published = %s, rating = %s
+                    WHERE id = %s
+                    RETURNING *;
+                    """,
+                    (payload.title, payload.content, payload.published, payload.rating, post_id)
+                )
+                updated_post = cursor.fetchone()
+                conn.commit()  # Ensure changes are saved
+
+    except Exception as e:
+        print(f"Error updating post: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
+
+    if not updated_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+
+    return {"data": updated_post}
