@@ -19,6 +19,6 @@ class Post(SQLModel, table=True):
     sa_column=Column(Float, server_default=text("0.0"))
   )
   created_at: Optional[datetime] = Field(
-    default_factory=datetime.now(), 
+    default_factory=datetime.now, 
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
