@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Body, Response
+from fastapi import FastAPI, HTTPException, status, Body, Response, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from random import randrange
@@ -6,7 +6,10 @@ import psycopg
 from psycopg.rows import dict_row
 from dotenv import load_dotenv
 import os
+from sqlalchemy.orm import Session
 # from contextlib import asynccontextmanager
+from .database import engine, get_db
+from . import models
 
 load_dotenv()
 
@@ -18,7 +21,12 @@ DB_USER = os.getenv("DB_USER")
 
 print(DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT, DB_USER)
 
+models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
+
+# Dependency
+
 
 # ----------------------------
 # Pydantic model representing a blog post
@@ -30,7 +38,7 @@ class Post(BaseModel):
     content: str
     published: bool = True
     rating: Optional[float] = None  # Optional rating field
-
+    
 
 # ----------------------------
 # Database connection function
@@ -114,6 +122,14 @@ storage.add_post(Post(title="Post 2", content="Content 2"))
 # ----------------------------
 # FastAPI Endpoints
 # ----------------------------
+
+@app.get("/health")
+def health_check(db: Session = Depends(get_db)):
+    """
+    Health check endpoint to verify if the API is running.
+    Returns a simple message indicating the API is alive.
+    """
+    return {"status": "Success -- API is alive"}
 
 @app.get("/")
 def root():

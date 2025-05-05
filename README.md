@@ -35,3 +35,7 @@ uvicorn app.main:app --reload
 ```bash
 git rm -r --cached .
 ```
+
+## Database format
+
+"postgresql://<username>:<password>@<ip-addr>:<port>/<DB_NAME>"
