@@ -4,12 +4,12 @@ from datetime import datetime
 from sqlmodel import Field, SQLModel
 
 def now():
-  return datetime.now().isoformat
+  return datetime.now()
 
 class Post(SQLModel, table=True):
   id: Optional[int] = Field(primary_key=True, index=True)
   title: str = Field(nullable=False, index=True)
   content: str  = Field(nullable=False)
   published: bool = Field(default=True)   
-  rating: Optional[float] = Field(default=None)
-  date: str = Field(default_factory=now)
+  rating: Optional[float] = Field(default=0)
+  created_at: datetime = Field(default_factory=now)

@@ -10,3 +10,9 @@ db = os.getenv("DB_NAME")
 
 DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
+engine = create_engine(DATABASE_URL)
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+

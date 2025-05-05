@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Body, Response
+from fastapi import FastAPI, HTTPException, status, Body, Response, Depends
 from pydantic import BaseModel, Field
 from typing import Optional
 from random import randrange
@@ -6,7 +6,14 @@ import psycopg
 from psycopg.rows import dict_row
 from dotenv import load_dotenv
 import os
+from sqlmodel import select, Session, SQLModel
+from typing import Annotated, List
 # from contextlib import asynccontextmanager
+
+from .models import Post
+from .database import engine, get_session
+from sqlmodel import SQLModel
+
 
 load_dotenv()
 
@@ -18,8 +25,17 @@ DB_USER = os.getenv("DB_USER")
 
 print(DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT, DB_USER)
 
+# ----------------------------
+# FastAPI application instance
+# ----------------------------
+# Create a FastAPI instance
+
 app = FastAPI()
 
+def  create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
+
+SessionDep = Annotated[Session, Depends(get_session)]
 # ----------------------------
 # Pydantic model representing a blog post
 # ----------------------------
@@ -114,6 +130,22 @@ storage.add_post(Post(title="Post 2", content="Content 2"))
 # ----------------------------
 # FastAPI Endpoints
 # ----------------------------
+
+@app.on_event("startup")
+def on_startup():
+    """
+    Event handler for application startup.
+    Creates database tables if they don't exist.
+    """
+    create_db_and_tables()
+
+@app.get('/health')
+def health_check():
+    """
+    Health check endpoint to verify if the API is running.
+    Returns a simple message indicating the API is healthy.
+    """
+    return {"status": "DB Created and API is running"}
 
 @app.get("/")
 def root():
