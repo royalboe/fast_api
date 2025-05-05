@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import os
 from sqlmodel import select, Session, SQLModel
 from typing import Annotated, List
-# from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager
 
 from .models import Post
 from .database import engine, get_session
@@ -24,13 +24,6 @@ DB_PORT = os.getenv("DB_PORT")
 DB_USER = os.getenv("DB_USER")
 
 print(DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT, DB_USER)
-
-# ----------------------------
-# FastAPI application instance
-# ----------------------------
-# Create a FastAPI instance
-
-app = FastAPI()
 
 def  create_db_and_tables():
     SQLModel.metadata.create_all(engine)
@@ -131,13 +124,15 @@ storage.add_post(Post(title="Post 2", content="Content 2"))
 # FastAPI Endpoints
 # ----------------------------
 
-@app.on_event("startup")
-def on_startup():
-    """
-    Event handler for application startup.
-    Creates database tables if they don't exist.
-    """
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
     create_db_and_tables()
+    yield
+    # Shutdown (if needed)
+
+app = FastAPI(lifespan=lifespan)
+
 
 @app.get('/health')
 def health_check():
