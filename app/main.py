@@ -7,12 +7,12 @@ from psycopg.rows import dict_row
 from dotenv import load_dotenv
 import os
 from sqlmodel import select, Session, SQLModel
+from sqlalchemy import text
 from typing import Annotated, List
 from contextlib import asynccontextmanager
 
-from .models import Post
+from .models import Post as PostModel
 from .database import engine, get_session
-from sqlmodel import SQLModel
 
 
 load_dotenv()
@@ -133,14 +133,30 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+@app.get("/health")
+def health_check(session: SessionDep):
+    try:
+        session.exec(text('SELECT 1'))  # lightweight DB check
+        return {"status": "healthy"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database connection failed: {str(e)}"
+        )
 
-@app.get('/health')
-def health_check():
-    """
-    Health check endpoint to verify if the API is running.
-    Returns a simple message indicating the API is healthy.
-    """
-    return {"status": "DB Created and API is running"}
+@app.get("/postings", response_model=List[PostModel])
+
+
+# @app.get('/health')
+# def health_check(session: SessionDep):
+#     """
+#     Health check endpoint to verify if the API is running.
+#     Returns a simple message indicating the API is healthy.
+#     """
+#     posts = session.exec(select(Post)).all()
+#     if not posts:
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No posts found")
+#     return {"status": posts}
 
 @app.get("/")
 def root():
