@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from .dependencies import SessionDep
 from .database import create_db_and_tables
 from .routes.post_routes import router as post_router
-# from .routes.users_routes import router as user_router
+from .routes.users_routes import router as user_router
 
 load_dotenv()
 
@@ -45,4 +45,4 @@ def root():
 # Include the routes
 
 app.include_router(post_router, prefix="/api/posts", tags=["Posts"])
-# app.include_router(user_router, prefix="/api/users", tags=["Users"])
+app.include_router(user_router, prefix="/api/users", tags=["Users"])
