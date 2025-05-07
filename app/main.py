@@ -5,7 +5,8 @@ from sqlalchemy import text
 from typing import Annotated, List
 from contextlib import asynccontextmanager
 
-from .models import Post as PostModel
+from .models.post import Post as PostModel
+from .models.user import User as UserModel
 from .database import get_session, create_db_and_tables
 from .schema import PostCreate, PostUpdate, PostResponse, PostBase
 
