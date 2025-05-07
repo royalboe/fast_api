@@ -1,14 +1,26 @@
-from sqlalchemy.sql.sqltypes import TIMESTAMP
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.sql.expression import text
+from typing import Optional
+from datetime import datetime
+from sqlalchemy import Column, Boolean, Float, DateTime, text
+from sqlmodel import Field, SQLModel
 
-from .database import Base
+class Post(SQLModel, table=True):
+  id: Optional[int] = Field(primary_key=True, index=True)
+  title: str = Field(nullable=False, index=True)
+  content: str  = Field(nullable=False)
+  published: Optional[bool] = Field(
+    default=True,
+    sa_column=Column(Boolean, server_default=text("true"))
+  )   
+  rating: Optional[float] = Field(
+    default=0,
+    sa_column=Column(Float, server_default=text("0.0"))
+  )
+  created_at: Optional[datetime] = Field(
+    default_factory=datetime.now, 
+    sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    )
 
-class Post(Base):
-    __tablename__ = "posts"
-    id: int = Column(Integer, primary_key=True, nullable=False)
-    title: str = Column(String, nullable=False)
-    content: str = Column(String, nullable=False)
-    published: bool = Column(Boolean, server_default="TRUE")
-    rating: int = Column(Integer, nullable=True, server_default=text('0'))  # Optional rating field
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))  # Optional created_at field
+  updated_at: Optional[datetime] = Field(
+    default_factory=datetime.now,
+    sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    )

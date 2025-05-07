@@ -1,26 +1,20 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from urllib.parse import quote_plus
 import os
+from sqlmodel import Session, create_engine, SQLModel
 
-SQLALCHEMY_DATABASE_URL = f"postgresql://"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=
-                       {
-                         "host": os.getenv("DB_HOST"),
-                         "port": os.getenv("DB_PORT"),
-                         "user": os.getenv("DB_USER"),
-                         "password": os.getenv("DB_PASSWORD"),
-                         "database": os.getenv("DB_NAME"),
-                         }
-                         )
+password = quote_plus(os.getenv("DB_PASSWORD"))
+user = os.getenv("DB_USER")
+host = os.getenv("DB_HOST")
+port = os.getenv("DB_PORT")
+db = os.getenv("DB_NAME")
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
-Base = declarative_base()
+engine = create_engine(DATABASE_URL)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+def  create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
