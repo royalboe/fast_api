@@ -4,7 +4,7 @@ from typing import List
 
 from ..models.post import Post as PostModel
 from ..schema.post_schema import PostCreate, PostUpdate, PostResponse, PostBase
-from ..dependencies import SessionDep
+from ..utils.dependencies import SessionDep
 
 router = APIRouter()
 

@@ -4,8 +4,8 @@ from typing import List
 
 from ..models.user import User as UserModel
 from ..schema.user_schema import UserCreate, UserUpdate, UserResponse
-from ..dependencies import SessionDep
-from ..hashing import hash_password, verify_password
+from ..utils.dependencies import SessionDep
+from ..utils.hashing import hash_password, verify_password
 
 router = APIRouter()
 
