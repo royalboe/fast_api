@@ -22,3 +22,8 @@ class Post(SQLModel, table=True):
     default_factory=datetime.now, 
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
+
+  updated_at: Optional[datetime] = Field(
+    default_factory=datetime.now,
+    sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
+    )
