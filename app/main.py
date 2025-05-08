@@ -46,3 +46,4 @@ def root():
 
 app.include_router(post_router, prefix="/api/posts", tags=["Posts"])
 app.include_router(user_router, prefix="/api/users", tags=["Users"])
+app.include_router(post_router, prefix="/api/auth", tags=["Authentication"])
