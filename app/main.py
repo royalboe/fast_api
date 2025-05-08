@@ -7,6 +7,7 @@ from .utils.dependencies import SessionDep
 from .database import create_db_and_tables
 from .routes.post_routes import router as post_router
 from .routes.users_routes import router as user_router
+from .routes.auth_routes import router as auth_router
 
 load_dotenv()
 
@@ -46,4 +47,4 @@ def root():
 
 app.include_router(post_router, prefix="/api/posts", tags=["Posts"])
 app.include_router(user_router, prefix="/api/users", tags=["Users"])
-app.include_router(post_router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])

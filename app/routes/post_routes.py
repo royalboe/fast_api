@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Response, Depends
+from ..utils.oauth2 import get_current_user
 from sqlmodel import select
 from typing import List
 
@@ -40,12 +41,12 @@ def get_post(post_id: int, session: SessionDep):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
-def create_post(session: SessionDep, payload: PostCreate):
+def create_post(session: SessionDep, payload: PostCreate, user_id: int = Depends(get_current_user)):
     """
     Create a new blog post with the given title and content.
     The post is validated using Pydantic and added to the in-memory storage.
     """
-    print('trying to create post')
+    print(user_id)
     try:
         post = PostModel(**payload.model_dump(exclude_unset=True))  # Unpack the payload into the model 
         session.add(post)
