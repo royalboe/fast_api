@@ -10,7 +10,7 @@ from ..utils.dependencies import SessionDep
 router = APIRouter()
 
 @router.get("/", response_model=List[PostResponse])
-def get_posts(session: SessionDep):
+def get_posts(session: SessionDep, user: int = Depends(get_current_user)):
     """
     Retrieve all blog posts.
     Returns a list of all stored posts.
@@ -24,7 +24,7 @@ def get_posts(session: SessionDep):
 
 
 @router.get("/{post_id}", response_model=PostResponse)
-def get_post(post_id: int, session: SessionDep):
+def get_post(post_id: int, session: SessionDep, user: int = Depends(get_current_user)):
     """
     Get a post by its unique ID.
     If the post exists, returns it; otherwise, raises a 404 error.
@@ -41,12 +41,12 @@ def get_post(post_id: int, session: SessionDep):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
-def create_post(session: SessionDep, payload: PostCreate, user_id: int = Depends(get_current_user)):
+def create_post(session: SessionDep, payload: PostCreate, user: int = Depends(get_current_user)):
     """
     Create a new blog post with the given title and content.
     The post is validated using Pydantic and added to the in-memory storage.
     """
-    print(user_id)
+    print(user)
     try:
         post = PostModel(**payload.model_dump(exclude_unset=True))  # Unpack the payload into the model 
         session.add(post)
@@ -58,7 +58,7 @@ def create_post(session: SessionDep, payload: PostCreate, user_id: int = Depends
     return post
 
 @router.get("/latest/recent", response_model=PostResponse)
-def get_latest_post(session: SessionDep):
+def get_latest_post(session: SessionDep, user: int = Depends(get_current_user)):
     """
     Get the latest (most recently added) post.
     Returns the last post added to the storage.
@@ -77,7 +77,7 @@ def get_latest_post(session: SessionDep):
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(post_id: int, session: SessionDep):
+def delete_post(post_id: int, session: SessionDep, user: int = Depends(get_current_user)):
     """
     Delete a post by its unique ID.
     If the post is found, it is removed from storage and a 204 status code is returned.
@@ -99,7 +99,7 @@ def delete_post(post_id: int, session: SessionDep):
 
 
 @router.put("/{post_id}", response_model=PostResponse, status_code=status.HTTP_202_ACCEPTED)
-def update_post(post_id: int, payload: PostUpdate, session: SessionDep):
+def update_post(post_id: int, payload: PostUpdate, session: SessionDep, user: int = Depends(get_current_user)):
     """
     Update an existing post by its unique ID using partial data.
     Returns the updated post or a 404 error if not found.
