@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from ..models.user import User as UserModel
 load_dotenv()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -25,28 +25,27 @@ def create_access_token(data: dict) -> str:
   return encoded_jwt
 
 
-def verify_access_token(token: str, credentials_exception) -> dict:
+def verify_access_token(token: str, credentials_exception) -> TokenData:
   try:
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     user_id = payload.get("user_id")
     if user_id is None:
       raise credentials_exception
     
-    token_data = TokenData(id=user_id)
+    return TokenData(id=user_id)
   except JWTError as e:
     print(e)
     raise credentials_exception
-  return token_data
 
 
-def get_current_user(session: SessionDep, token: str = Depends(oauth2_scheme)) -> TokenData:
+def get_current_user(session: SessionDep, token: str = Depends(oauth2_scheme)) -> UserModel:
   credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
     headers={"WWW-Authenticate": "Bearer"},
   )
 
-  user_id = verify_access_token(token, credentials_exception)
+  user_id = verify_access_token(token, credentials_exception).id
   if user_id is None:
     raise credentials_exception
   user = session.get(UserModel, user_id)
