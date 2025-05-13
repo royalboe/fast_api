@@ -1,10 +1,8 @@
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime
-from sqlalchemy import Column, Boolean, Float, DateTime, text
+from sqlalchemy import Column, DateTime, text
 from sqlmodel import Field, SQLModel, Relationship
 from pydantic import EmailStr
-import jwt
-from jwt.exceptions import InvalidTokenError
 
 if TYPE_CHECKING:
   from app.models.post import Post

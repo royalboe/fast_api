@@ -3,21 +3,30 @@ from sqlmodel import select
 from typing import List
 
 from ..models.user import User as UserModel
-from ..schema.user_schema import UserCreate, UserUpdate, UserResponse
+from ..schema.schema import UserCreate, UserUpdate, UserResponseWithPosts
 from ..utils.dependencies import SessionDep
-from ..utils.hashing import hash_password, verify_password
+from ..utils.hashing import hash_password
 
 router = APIRouter()
 
-@router.get("/")
-def users(session: SessionDep):
+@router.get("/health")
+def users():
     """
     Retrieve all blog posts.
     Returns a list of all stored posts.
     """
     return {"message": "Hello from users"}
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
+@router.get("/", response_model=List[UserResponseWithPosts])
+def get_users(session: SessionDep):
+    """
+    Retrieve all users.
+    Returns a list of all stored users.
+    """
+    users = session.exec(select(UserModel)).all()
+    return users
+
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserResponseWithPosts)
 def create_user(user: UserCreate, session: SessionDep):
     """
     Create a new user.
@@ -41,7 +50,7 @@ def create_user(user: UserCreate, session: SessionDep):
     session.refresh(db_user)
     return db_user
 
-@router.get("/{user_id}", response_model=UserResponse)
+@router.get("/{user_id}", response_model=UserResponseWithPosts)
 def get_user(user_id: int, session: SessionDep):
     """
     Get a user by their unique ID.
@@ -53,7 +62,7 @@ def get_user(user_id: int, session: SessionDep):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
     return user
 
-@router.patch("/", response_model=UserResponse)
+@router.patch("/", response_model=UserResponseWithPosts)
 def update_user(user: UserUpdate, session: SessionDep):
     """
     Update a user by their unique ID.

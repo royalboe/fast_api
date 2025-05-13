@@ -1,32 +1,57 @@
-from fastapi import APIRouter, HTTPException, status, Response, Depends
+from fastapi import APIRouter, HTTPException, status, Response, Depends, Query
 from datetime import datetime
 from ..utils.oauth2 import get_current_user
 from sqlmodel import select
-from typing import List
+from typing import List, Optional
 
 from ..models.post import Post as PostModel
 from ..models.user import User as UserModel
-from ..schema.post_schema import PostCreate, PostUpdate, PostResponse, PostBase
+from ..schema.schema import PostCreate, PostUpdate, PostResponseWithUser
 from ..utils.dependencies import SessionDep
 
 router = APIRouter()
 
-@router.get("/", response_model=List[PostResponse])
-def get_posts(session: SessionDep, current_user: UserModel = Depends(get_current_user)):
+@router.get("/", response_model=List[PostResponseWithUser])
+def get_posts(
+    session: SessionDep, 
+    current_user: UserModel = Depends(get_current_user), 
+    limit: int= Query(default=100, le=100), 
+    offset=0,
+    search=""
+    ):
     """
     Retrieve all blog posts.
     Returns a list of all stored posts.
     """
     print(current_user.json())
     try:
-        posts = session.exec(select(PostModel)).all()
+        posts = session.exec(select(PostModel).filter(PostModel.title.contains(search)).offset(offset).limit(limit)).all()
+    except Exception as e:
+        print(f"Error fetching posts: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
+    return posts
+
+@router.get("/user-posts", response_model=List[PostResponseWithUser])
+def get_my_posts(
+    session:SessionDep, 
+    current_user: UserModel = Depends(get_current_user),
+    limit: int= Query(default=100, le=100),
+    offset=0,
+    search: Optional[str]=""
+    ):
+    """
+    Retrieve all blog posts belonging to logged in user.
+    Returns a list of all stored posts.
+    """
+    try:
+        posts = session.exec(select(PostModel).where(PostModel.author_id == current_user.id).filter(PostModel.title.contains(search)).offset(offset).limit(limit)).all()
     except Exception as e:
         print(f"Error fetching posts: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
     return posts
 
 
-@router.get("/{post_id}", response_model=PostResponse)
+@router.get("/{post_id}", response_model=PostResponseWithUser)
 def get_post(post_id: int, session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Get a post by its unique ID.
@@ -43,7 +68,7 @@ def get_post(post_id: int, session: SessionDep, current_user: UserModel = Depend
     return post
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponseWithUser)
 def create_post(session: SessionDep, payload: PostCreate, current_user: UserModel = Depends(get_current_user)):
     """
     Create a new blog post with the given title and content.
@@ -61,7 +86,7 @@ def create_post(session: SessionDep, payload: PostCreate, current_user: UserMode
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
     return post
 
-@router.get("/latest/recent", response_model=PostResponse)
+@router.get("/latest/recent", response_model=PostResponseWithUser)
 def get_latest_post(session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Get the latest (most recently added) post.
@@ -103,7 +128,7 @@ def delete_post(post_id: int, session: SessionDep, current_user: UserModel = Dep
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.put("/{post_id}", response_model=PostResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{post_id}", response_model=PostResponseWithUser, status_code=status.HTTP_202_ACCEPTED)
 def update_post(post_id: int, payload: PostUpdate, session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Update an existing post by its unique ID using partial data.
