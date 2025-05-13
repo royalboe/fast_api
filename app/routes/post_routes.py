@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
+from datetime import datetime
 from ..utils.oauth2 import get_current_user
 from sqlmodel import select
 from typing import List
@@ -90,7 +91,8 @@ def delete_post(post_id: int, session: SessionDep, current_user: UserModel = Dep
     if not deleted_post:
         # Raise 404 if post doesn't exist
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
-    
+    # if deleted_post.author_id != current_user.id:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
     try:
         session.delete(deleted_post)
         session.commit()  # Commit the deletion  
@@ -114,10 +116,17 @@ def update_post(post_id: int, payload: PostUpdate, session: SessionDep, current_
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Post with id {post_id} not found"
             )
-
+        
+        if updated_post.author_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to perform requested action"
+            )
+        print(current_user)
         update_data = payload.model_dump(exclude_unset=True)
+        extra_data = {'updated_at': datetime.now().isoformat()}
         # Update the fields of the post
-        updated_post.sqlmodel_update(update_data)
+        updated_post.sqlmodel_update(update_data, update=extra_data)
 
         # for field, value in update_data.items():
         #     setattr(updated_post, field, value)

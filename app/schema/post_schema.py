@@ -19,7 +19,7 @@ class PostResponse(PostBase):
 
 
 class PostUpdate(PostBase):
-    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = Field(default=datetime.now().isoformat())
 
 class PostResponseWithUser(PostResponse):
     user: Optional['UserResponse'] = None

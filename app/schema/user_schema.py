@@ -18,7 +18,7 @@ class UserUpdate(UserBase):
     username: Optional[str] = Field(default=None, min_length=1)
     email: Optional[EmailStr] = Field(default=None, min_length=1)
     password: Optional[str] = Field(default=None, min_length=1)
-    updated_at: Optional[datetime] = Field(default_factory=datetime.now)
+    updated_at: Optional[datetime] = Field(default=datetime.now)
 
 class UserResponseWithPosts(UserResponse):
     posts: list['PostResponse'] = Field(default_factory=list)

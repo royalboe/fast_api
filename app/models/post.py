@@ -25,7 +25,7 @@ class Post(PostBase, table=True):
     )
 
   updated_at: Optional[datetime] = Field(
-    default_factory=datetime.now,
+    default=datetime.now().isoformat(),
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
 

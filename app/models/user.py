@@ -17,7 +17,7 @@ class User(UserBase, table=True):
   id: Optional[int] = Field(default=None, primary_key=True, index=True)
   hashed_password: str = Field(nullable=False)
   updated_at: Optional[datetime] = Field(
-    default_factory=datetime.now,
+    default=datetime.now().isoformat(),
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
   created_at: Optional[datetime] = Field(
