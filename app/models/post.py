@@ -6,9 +6,7 @@ from sqlmodel import Field, SQLModel, Relationship
 if TYPE_CHECKING:
   from app.models.user import User
 
-
-class Post(SQLModel, table=True):
-  id: Optional[int] = Field(primary_key=True, index=True)
+class PostBase(SQLModel):
   title: str = Field(nullable=False, index=True)
   content: str  = Field(nullable=False)
   published: Optional[bool] = Field(
@@ -19,6 +17,8 @@ class Post(SQLModel, table=True):
     default=0,
     sa_column=Column(Float, server_default=text("0.0"))
   )
+class Post(PostBase, table=True):
+  id: Optional[int] = Field(default=None, primary_key=True, index=True)
   created_at: Optional[datetime] = Field(
     default_factory=datetime.now, 
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))

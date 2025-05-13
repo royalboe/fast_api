@@ -48,9 +48,10 @@ def create_post(session: SessionDep, payload: PostCreate, current_user: UserMode
     Create a new blog post with the given title and content.
     The post is validated using Pydantic and added to the in-memory storage.
     """
-    print(current_user.json())
     try:
-        post = PostModel(**payload.model_dump(exclude_unset=True))  # Unpack the payload into the model 
+        # post = PostModel(**payload.model_dump(exclude_unset=True))  # Unpack the payload into the model
+        extra_data = {'author': current_user}
+        post = PostModel.model_validate(payload, update=extra_data)
         session.add(post)
         session.commit()
         session.refresh(post)  # Refresh to get the ID and other defaults
