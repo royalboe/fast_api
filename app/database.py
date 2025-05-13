@@ -1,13 +1,12 @@
 from urllib.parse import quote_plus
-import os
 from sqlmodel import Session, create_engine, SQLModel
+from .config import settings
 
-password = quote_plus(os.getenv("DB_PASSWORD"))
-user = os.getenv("DB_USER")
-host = os.getenv("DB_HOST")
-port = os.getenv("DB_PORT")
-db = os.getenv("DB_NAME")
-
+password = quote_plus(settings.db_password)
+user = settings.db_user
+host = settings.db_host
+port = settings.db_port
+db = settings.db_name
 DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
 engine = create_engine(DATABASE_URL)

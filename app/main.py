@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, status
-from dotenv import load_dotenv
 from sqlalchemy import text
 from contextlib import asynccontextmanager
 
@@ -9,7 +8,6 @@ from .routes.post_routes import router as post_router
 from .routes.users_routes import router as user_router
 from .routes.auth_routes import router as auth_router
 
-load_dotenv()
 
 
 # ---------------------------A-
