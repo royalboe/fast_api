@@ -1,8 +1,11 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from sqlmodel import SQLModel, Field
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 
-class PostBase(BaseModel):
+if TYPE_CHECKING:
+    from ..schema.user_schema import UserResponse
+
+class PostBase(SQLModel):
     title: str = Field(min_length=1)
     content: str = Field(min_length=1)
     published: Optional[bool] = True
@@ -25,3 +28,6 @@ class PostUpdate(PostBase):
     published: Optional[float] = Field(default=None)
     rating: Optional[float] = Field(default=None)
     updated_at: Optional[datetime] = Field(default_factory=datetime.now)
+
+class PostResponseWithUser(PostResponse):
+    user: Optional['UserResponse'] = None

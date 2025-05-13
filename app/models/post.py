@@ -1,7 +1,11 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import Column, Boolean, Float, DateTime, text
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Relationship
+
+if TYPE_CHECKING:
+  from app.models.user import User
+
 
 class Post(SQLModel, table=True):
   id: Optional[int] = Field(primary_key=True, index=True)
@@ -24,3 +28,7 @@ class Post(SQLModel, table=True):
     default_factory=datetime.now,
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
+
+  author_id: Optional[int] = Field(default=None, foreign_key="user.id", ondelete="CASCADE")
+  author: Optional["User"] = Relationship(back_populates="posts", passive_deletes='all')
+

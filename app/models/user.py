@@ -1,22 +1,21 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import Column, Boolean, Float, DateTime, text
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Relationship
 from pydantic import EmailStr
 import jwt
 from jwt.exceptions import InvalidTokenError
-from passlib.context import CryptContext
 
-class User(SQLModel, table=True):
-  id: Optional[int] = Field(primary_key=True, index=True)
+if TYPE_CHECKING:
+  from app.models.post import Post
+
+class UserBase(SQLModel):
   email: EmailStr = Field(nullable=False, index=True, unique=True)
-  password: str = Field(nullable=False)
-  created_at: Optional[datetime] = Field(
-    default_factory=datetime.now,
-    sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
-    )
   username: Optional[str] = Field(default=None, nullable=True)
-
+  
+class User(UserBase, table=True):
+  id: Optional[int] = Field(default=None, primary_key=True, index=True)
+  hashed_password: str = Field(nullable=False)
   updated_at: Optional[datetime] = Field(
     default_factory=datetime.now,
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
@@ -25,3 +24,5 @@ class User(SQLModel, table=True):
     default_factory=datetime.now, 
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
+  posts: list["Post"] = Relationship(back_populates="author")
+  

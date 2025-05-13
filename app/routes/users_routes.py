@@ -32,9 +32,10 @@ def create_user(user: UserCreate, session: SessionDep):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered"
         )
-    # db_user = UserModel.model_validate(user)
-    user.password = hash_password(user.password)
-    db_user = UserModel(**user.model_dump(exclude_unset=True))
+    hash = hash_password(user.password)
+    extra_data = {"hashed_password": hash}
+    db_user = UserModel.model_validate(user, update=extra_data)
+    # db_user = UserModel(**user.model_dump(exclude_unset=True))
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
@@ -51,3 +52,48 @@ def get_user(user_id: int, session: SessionDep):
         # Return 404 if not found
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
     return user
+
+@router.patch("/", response_model=UserResponse)
+def update_user(user: UserUpdate, session: SessionDep):
+    """
+    Update a user by their unique ID.
+    If the user exists, updates it; otherwise, raises a 404 error.
+    """
+    # db_user = session.get(UserModel, request.form.get("user_email"))
+    statement = select(UserModel).where(UserModel.email == user.email)
+    db_user = session.exec(statement).first()
+
+    if not db_user:
+        # Return 404 if not found
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No user with email {user.email} found")    
+    # Update the user
+    updated_data = user.model_dump(exclude_unset=True)
+    extra_data = {}
+    # Hash password if provided
+    if "password" in updated_data:
+         password = updated_data["password"]
+         hash = hash_password(password)
+         extra_data = {"hashed_password": hash}
+    
+    db_user.sqlmodel_update(updated_data, update=extra_data)
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    
+    return db_user
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(user_id: int, session: SessionDep):
+    """
+    Delete a user by their unique ID.
+    If the user exists, deletes it; otherwise, raises a 404 error.
+    """
+    user = session.get(UserModel, user_id)
+    if not user:
+        # Return 404 if not found
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+    
+    session.delete(user)
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -18,7 +18,7 @@ def login(session: SessionDep, user_credentials: OAuth2PasswordRequestForm = Dep
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
-    if not verify_password(user_credentials.password, user.password):
+    if not verify_password(user_credentials.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
     
     # Create a JWT token here if needed

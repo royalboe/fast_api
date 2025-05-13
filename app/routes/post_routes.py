@@ -4,17 +4,19 @@ from sqlmodel import select
 from typing import List
 
 from ..models.post import Post as PostModel
+from ..models.user import User as UserModel
 from ..schema.post_schema import PostCreate, PostUpdate, PostResponse, PostBase
 from ..utils.dependencies import SessionDep
 
 router = APIRouter()
 
 @router.get("/", response_model=List[PostResponse])
-def get_posts(session: SessionDep, user: int = Depends(get_current_user)):
+def get_posts(session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Retrieve all blog posts.
     Returns a list of all stored posts.
     """
+    print(current_user.json())
     try:
         posts = session.exec(select(PostModel)).all()
     except Exception as e:
@@ -24,7 +26,7 @@ def get_posts(session: SessionDep, user: int = Depends(get_current_user)):
 
 
 @router.get("/{post_id}", response_model=PostResponse)
-def get_post(post_id: int, session: SessionDep, user: int = Depends(get_current_user)):
+def get_post(post_id: int, session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Get a post by its unique ID.
     If the post exists, returns it; otherwise, raises a 404 error.
@@ -41,12 +43,12 @@ def get_post(post_id: int, session: SessionDep, user: int = Depends(get_current_
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
-def create_post(session: SessionDep, payload: PostCreate, user: int = Depends(get_current_user)):
+def create_post(session: SessionDep, payload: PostCreate, current_user: UserModel = Depends(get_current_user)):
     """
     Create a new blog post with the given title and content.
     The post is validated using Pydantic and added to the in-memory storage.
     """
-    print(user)
+    print(current_user.json())
     try:
         post = PostModel(**payload.model_dump(exclude_unset=True))  # Unpack the payload into the model 
         session.add(post)
@@ -58,7 +60,7 @@ def create_post(session: SessionDep, payload: PostCreate, user: int = Depends(ge
     return post
 
 @router.get("/latest/recent", response_model=PostResponse)
-def get_latest_post(session: SessionDep, user: int = Depends(get_current_user)):
+def get_latest_post(session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Get the latest (most recently added) post.
     Returns the last post added to the storage.
@@ -77,7 +79,7 @@ def get_latest_post(session: SessionDep, user: int = Depends(get_current_user)):
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(post_id: int, session: SessionDep, user: int = Depends(get_current_user)):
+def delete_post(post_id: int, session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Delete a post by its unique ID.
     If the post is found, it is removed from storage and a 204 status code is returned.
@@ -99,7 +101,7 @@ def delete_post(post_id: int, session: SessionDep, user: int = Depends(get_curre
 
 
 @router.put("/{post_id}", response_model=PostResponse, status_code=status.HTTP_202_ACCEPTED)
-def update_post(post_id: int, payload: PostUpdate, session: SessionDep, user: int = Depends(get_current_user)):
+def update_post(post_id: int, payload: PostUpdate, session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Update an existing post by its unique ID using partial data.
     Returns the updated post or a 404 error if not found.
@@ -113,9 +115,12 @@ def update_post(post_id: int, payload: PostUpdate, session: SessionDep, user: in
             )
 
         update_data = payload.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(updated_post, field, value)
+        # Update the fields of the post
+        updated_post.sqlmodel_update(update_data)
 
+        # for field, value in update_data.items():
+        #     setattr(updated_post, field, value)
+        session.add(updated_post)
         session.commit()
         session.refresh(updated_post)
     except HTTPException:
