@@ -6,8 +6,9 @@ if TYPE_CHECKING:
   from app.models.post import Post
 
 class Vote(SQLModel, table=True):
-  user_id: Optional[int] = Field(default=None, foreign_key="user.id", primary_key=True, ondelete='CASCADE')
-  post_id: Optional[int] = Field(default=None, foreign_key="post.id", primary_key=True, ondelete='CASCADE')
+  __tablename__ = 'Votes'
+  user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True, ondelete='CASCADE')
+  post_id: Optional[int] = Field(default=None, foreign_key="posts.id", primary_key=True, ondelete='CASCADE')
 
   user: Optional["User"] = Relationship(back_populates="votes", cascade_delete=True)
   post: Optional["Post"] = Relationship(back_populates="votes", cascade_delete=True)

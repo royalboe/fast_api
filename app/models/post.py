@@ -31,7 +31,7 @@ class Post(PostBase, table=True):
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
 
-  author_id: Optional[int] = Field(default=None, foreign_key="user.id", ondelete="CASCADE")
+  author_id: Optional[int] = Field(default=None, foreign_key="users.id", ondelete="CASCADE")
   author: Optional["User"] = Relationship(back_populates="posts", passive_deletes='all', cascade_delete=True)
 
   votes: list['Vote'] = Relationship(back_populates="post")

@@ -2,6 +2,7 @@ from typing import Optional, Annotated
 from datetime import datetime
 from sqlmodel import Field
 from pydantic import EmailStr, conint
+from pydantic import Field as PyField
 
 from app.models.post import PostBase
 from ..models.user import UserBase
@@ -37,7 +38,7 @@ class UserUpdate(UserBase):
 
 class VoteBase(SQLModel):
     post_id: int
-    dir: Annotated[int, Field(strict=True, le=1)]
+    dir: Annotated[int, PyField(strict=True, le=1)]
 
 # With relationships
 
