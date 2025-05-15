@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, Annotated
 from datetime import datetime
 from sqlmodel import Field
-from pydantic import EmailStr
+from pydantic import EmailStr, conint
 
 from app.models.post import PostBase
 from ..models.user import UserBase
+from sqlmodel import SQLModel
 
 # Post Schema
 class PostCreate(PostBase):
@@ -32,6 +33,11 @@ class UserUpdate(UserBase):
     password: Optional[str] = Field(default=None, min_length=1)
     updated_at: Optional[datetime] = Field(default=datetime.now)
 
+# Vote
+
+class VoteBase(SQLModel):
+    post_id: int
+    dir: Annotated[int, Field(strict=True, le=1)]
 
 # With relationships
 

@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, text
 from sqlmodel import Field, SQLModel, Relationship
 from pydantic import EmailStr
+from .votes import Vote
 
 if TYPE_CHECKING:
   from app.models.post import Post
@@ -12,6 +13,7 @@ class UserBase(SQLModel):
   username: Optional[str] = Field(default=None, nullable=True)
   
 class User(UserBase, table=True):
+  __tablename__ = "users"
   id: Optional[int] = Field(default=None, primary_key=True, index=True)
   hashed_password: str = Field(nullable=False)
   updated_at: Optional[datetime] = Field(
@@ -23,4 +25,5 @@ class User(UserBase, table=True):
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
   posts: list["Post"] = Relationship(back_populates="author")
+  votes: list["Vote"] = Relationship(back_populates="user")
   

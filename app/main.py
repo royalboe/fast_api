@@ -17,7 +17,7 @@ from .routes.auth_routes import router as auth_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    create_db_and_tables()
+    # create_db_and_tables()
     yield
     # Shutdown (if needed)
 

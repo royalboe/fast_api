@@ -2,6 +2,7 @@ from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import Column, Boolean, Float, DateTime, text
 from sqlmodel import Field, SQLModel, Relationship
+from .votes import Vote
 
 if TYPE_CHECKING:
   from app.models.user import User
@@ -18,6 +19,7 @@ class PostBase(SQLModel):
     sa_column=Column(Float, server_default=text("0.0"))
   )
 class Post(PostBase, table=True):
+  __tablename__ = "posts"
   id: Optional[int] = Field(default=None, primary_key=True, index=True)
   created_at: Optional[datetime] = Field(
     default_factory=datetime.now, 
@@ -30,5 +32,6 @@ class Post(PostBase, table=True):
     )
 
   author_id: Optional[int] = Field(default=None, foreign_key="user.id", ondelete="CASCADE")
-  author: Optional["User"] = Relationship(back_populates="posts", passive_deletes='all')
+  author: Optional["User"] = Relationship(back_populates="posts", passive_deletes='all', cascade_delete=True)
 
+  votes: list['Vote'] = Relationship(back_populates="post")
