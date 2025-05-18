@@ -2,30 +2,37 @@ from fastapi import APIRouter, HTTPException, status, Response, Depends, Query
 from datetime import datetime
 from ..utils.oauth2 import get_current_user
 from sqlmodel import select
+from sqlalchemy import func
 from typing import List, Optional
 
 from ..models.post import Post as PostModel
 from ..models.user import User as UserModel
-from ..schema.schema import PostCreate, PostUpdate, PostResponseWithUser
+from ..models.votes import Vote as VoteModel
+from ..schema.schema import PostCreate, PostUpdate, PostResponseWithUser, PostWithVotesSchema
 from ..utils.dependencies import SessionDep
 
 router = APIRouter()
 
-@router.get("/", response_model=List[PostResponseWithUser])
+@router.get("/", response_model=List[PostWithVotesSchema])
 def get_posts(
     session: SessionDep, 
-    current_user: UserModel = Depends(get_current_user), 
-    limit: int= Query(default=100, le=100), 
-    offset=0,
+    current_user: UserModel=Depends(get_current_user), 
+    limit: int=Query(default=100, le=100), 
+    offset: int=Query(default=0),
     search=""
     ):
     """
     Retrieve all blog posts.
     Returns a list of all stored posts.
     """
-    print(current_user.json())
     try:
-        posts = session.exec(select(PostModel).filter(PostModel.title.contains(search)).offset(offset).limit(limit)).all()
+        if search:
+            statement = select(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).filter(PostModel.title.contains(search)).offset(offset).limit(limit)
+        else:
+            statement = select(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).offset(offset).limit(limit)
+        print(statement)
+        posts = session.exec(statement).all()
+        
     except Exception as e:
         print(f"Error fetching posts: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")

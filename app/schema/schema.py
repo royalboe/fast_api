@@ -47,3 +47,7 @@ class PostResponseWithUser(PostResponse):
 
 class UserResponseWithPosts(UserResponse):
     posts: list['PostResponse'] = []
+
+class PostWithVotesSchema(SQLModel):
+    Post: PostResponseWithUser
+    votes: int
