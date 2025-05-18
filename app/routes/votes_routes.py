@@ -9,6 +9,9 @@ router = APIRouter()
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
 def create_vote(vote: VoteBase, session: SessionDep, current_user=Depends(get_current_user)):
+
+    if not session.get(Vote, vote.post_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     
     statement = select(Vote).filter(Vote.post_id == vote.post_id, Vote.user_id == current_user.id)
 
