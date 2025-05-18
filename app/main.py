@@ -18,7 +18,7 @@ from .routes.votes_routes import router as vote_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    create_db_and_tables()
+    # create_db_and_tables()
     yield
     # Shutdown (if needed)
 

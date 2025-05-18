@@ -39,3 +39,17 @@ git rm -r --cached .
 ## Database format
 
 "postgresql://<username>:<password>@<ip-addr>:<port>/<DB_NAME>"
+
+## Alembic
+
+```bash
+pip install alembic
+```
+
+```bash
+alembic init migrations
+```
+
+```bash
+alembic revison --autogenerate -m "Initial migration for the user, post and vote tables"
+```

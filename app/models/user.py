@@ -16,6 +16,7 @@ class User(UserBase, table=True):
   __tablename__ = "users"
   id: Optional[int] = Field(default=None, primary_key=True, index=True)
   hashed_password: str = Field(nullable=False)
+  phone_number: Optional[str] = Field(default=None, nullable=True)
   updated_at: Optional[datetime] = Field(
     default=datetime.now().isoformat(),
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
