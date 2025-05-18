@@ -32,6 +32,6 @@ class Post(PostBase, table=True):
     )
 
   author_id: Optional[int] = Field(default=None, foreign_key="users.id", ondelete="CASCADE")
-  author: Optional["User"] = Relationship(back_populates="posts", passive_deletes='all', cascade_delete=True)
+  author: Optional["User"] = Relationship(back_populates="posts")
 
-  votes: list['Vote'] = Relationship(back_populates="post")
+  votes: list['Vote'] = Relationship(back_populates="post", cascade_delete=True)

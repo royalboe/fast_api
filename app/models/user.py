@@ -24,6 +24,6 @@ class User(UserBase, table=True):
     default_factory=datetime.now, 
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
-  posts: list["Post"] = Relationship(back_populates="author")
-  votes: list["Vote"] = Relationship(back_populates="user")
+  posts: list["Post"] = Relationship(back_populates="author", cascade_delete=True)
+  votes: list["Vote"] = Relationship(back_populates="user", cascade_delete=True)
   

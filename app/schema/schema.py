@@ -38,7 +38,7 @@ class UserUpdate(UserBase):
 
 class VoteBase(SQLModel):
     post_id: int
-    dir: Annotated[int, PyField(strict=True, le=1)]
+    dir: Annotated[int, PyField(strict=True, ge=0, le=1)]
 
 # With relationships
 
