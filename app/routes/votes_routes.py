@@ -22,10 +22,12 @@ def create_vote(vote: VoteBase, session: SessionDep, current_user=Depends(get_cu
         session.add(new_vote)
         session.commit()
         session.refresh(new_vote)
+        return {"message": "Successfully upvoted post"}
     else:
         if not result:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
         session.delete(result)
         session.commit()
+        return {"message": "Successfully downvoted post."}
 
-    return {"message": "Successfully upvoted post"}
+    
