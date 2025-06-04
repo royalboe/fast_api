@@ -1,8 +1,11 @@
-from typing import Optional, Annotated
+from __future__ import annotations
+
+from typing import Annotated
 from datetime import datetime
 from sqlmodel import Field
-from pydantic import EmailStr, conint
+from pydantic import EmailStr
 from pydantic import Field as PyField
+
 
 from app.models.post import PostBase
 from ..models.user import UserBase
@@ -19,7 +22,7 @@ class PostResponse(PostBase):
     author_id: int
 
 class PostUpdate(PostBase):
-    updated_at: Optional[datetime] = Field(default=datetime.now().isoformat())
+    updated_at: datetime | None = Field(default=datetime.now().isoformat())
 
 # User Schema
 class UserCreate(UserBase):
@@ -29,10 +32,10 @@ class UserResponse(UserBase):
     id: int
 
 class UserUpdate(UserBase):
-    username: Optional[str] = Field(default=None, min_length=1)
-    email: Optional[EmailStr] = Field(default=None, min_length=1)
-    password: Optional[str] = Field(default=None, min_length=1)
-    updated_at: Optional[datetime] = Field(default=datetime.now)
+    username: str | None = Field(default=None, min_length=1)
+    email: EmailStr | None = Field(default=None, min_length=1)
+    password: str | None = Field(default=None, min_length=1)
+    updated_at: datetime | None = Field(default=datetime.now)
 
 # Vote
 
@@ -43,10 +46,10 @@ class VoteBase(SQLModel):
 # With relationships
 
 class PostResponseWithUser(PostResponse):
-    author: Optional["UserResponse"] = None
+    author: UserResponse | None = None
 
 class UserResponseWithPosts(UserResponse):
-    posts: list['PostResponse'] = []
+    posts: list[PostResponse] = []
 
 class PostWithVotesSchema(SQLModel):
     Post: PostResponseWithUser

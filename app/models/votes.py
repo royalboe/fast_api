@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 
 class Vote(SQLModel, table=True):
   __tablename__ = 'votes'
-  user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True, ondelete='CASCADE')
-  post_id: Optional[int] = Field(default=None, foreign_key="posts.id", primary_key=True, ondelete='CASCADE')
+  user_id: int | None = Field(default=None, foreign_key="users.id", primary_key=True, ondelete='CASCADE')
+  post_id: int | None = Field(default=None, foreign_key="posts.id", primary_key=True, ondelete='CASCADE')
 
   user: Optional["User"] = Relationship(back_populates="votes")
   post: Optional["Post"] = Relationship(back_populates="votes")

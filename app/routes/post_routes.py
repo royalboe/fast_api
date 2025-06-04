@@ -27,10 +27,16 @@ def get_posts(
     """
     try:
         if search:
-            statement = select(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).filter(PostModel.title.contains(search)).offset(offset).limit(limit)
+            statement = (
+                select(PostModel, func.count(VoteModel.post_id).label("votes"))
+                .join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True)
+                .group_by(PostModel.id).filter(PostModel.title.contains(search))
+                .offset(offset)
+                .limit(limit)
+                )
         else:
             statement = select(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).offset(offset).limit(limit)
-        print(statement)
+        # print(statement)
         posts = session.exec(statement).all()
         
     except Exception as e:
@@ -50,28 +56,41 @@ def get_my_posts(
     Retrieve all blog posts belonging to logged in user.
     Returns a list of all stored posts.
     """
+    statement = (
+        select(PostModel)
+        .where(PostModel.author_id == current_user.id)
+        .filter(PostModel.title.contains(search))
+        .offset(offset)
+        .limit(limit)
+    )
     try:
-        posts = session.exec(select(PostModel).where(PostModel.author_id == current_user.id).filter(PostModel.title.contains(search)).offset(offset).limit(limit)).all()
+        posts = session.exec(statement).all()
     except Exception as e:
         print(f"Error fetching posts: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
     return posts
 
-
-@router.get("/{post_id}", response_model=PostResponseWithUser)
+@router.get("/{post_id}", response_model=PostWithVotesSchema)
 def get_post(post_id: int, session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Get a post by its unique ID.
     If the post exists, returns it; otherwise, raises a 404 error.
     """
     try:
-        post = session.get(PostModel, post_id)
+        statement = (
+            select(PostModel, func.count(VoteModel.post_id).label("votes"))
+            .join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True)
+            .group_by(PostModel.id)
+            .where(PostModel.id == post_id)
+        )
+        post = session.exec(statement).first()
     except Exception as e:
         print(f"Error fetching post: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
     if not post:
         # Return 404 if not found
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
+    print(type(post))
     return post
 
 

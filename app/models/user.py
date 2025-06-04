@@ -10,18 +10,18 @@ if TYPE_CHECKING:
 
 class UserBase(SQLModel):
   email: EmailStr = Field(nullable=False, index=True, unique=True)
-  username: Optional[str] = Field(default=None, nullable=True)
+  username: str | None = Field(default=None, nullable=True)
   
 class User(UserBase, table=True):
   __tablename__ = "users"
-  id: Optional[int] = Field(default=None, primary_key=True, index=True)
+  id: int | None = Field(default=None, primary_key=True, index=True)
   hashed_password: str = Field(nullable=False)
-  phone_number: Optional[str] = Field(default=None, nullable=True)
-  updated_at: Optional[datetime] = Field(
+  phone_number: str | None = Field(default=None, nullable=True)
+  updated_at: datetime | None = Field(
     default=datetime.now().isoformat(),
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
-  created_at: Optional[datetime] = Field(
+  created_at: datetime | None = Field(
     default_factory=datetime.now, 
     sa_column=Column(DateTime(timezone=True), server_default=text("CURRENT_TIMESTAMP"))
     )
