@@ -65,4 +65,4 @@ heroku create fastapi-royalboe
 
 The above command creates an heroku app with the name fastapi-royalboe
 
-wbb: uvicorn app.main:app --host=0.0.0.0 --port=${PORT:-5000}
+
