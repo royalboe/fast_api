@@ -53,3 +53,14 @@ alembic init migrations
 ```bash
 alembic revison --autogenerate -m "Initial migration for the user, post and vote tables"
 ```
+
+
+## HEROKU
+
+Creating the heroku app
+
+```bash
+heroku create fastapi-royalboe
+```
+
+The above command creates an heroku app with the name fastapi-royalboe
