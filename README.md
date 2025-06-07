@@ -162,7 +162,7 @@ Run the following commands in the ubuntu machine
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-
+sudo apt install libpq-dev -y
 sudo apt install python3-pip -y
 
 sudo apt install python3-virtualenv -y
@@ -234,4 +234,35 @@ Install dependencies
 
 ```bash
 pip install -r requirements.txt
+```
+
+Handle the environment variables
+
+```bash
+vi /home/fastapi/.env
+set -o allexport; source /home/fastapi/.env; set +o allexport
+```
+
+Persist env
+
+```bash
+echo 'set -o allexport; source /home/fastapi/.env; set +o allexport' >> /home/fastapi/.profile
+```
+
+Run the application
+
+```bash
+uvicorn --host 0.0.0.0 --port 8080 app.main:app
+```
+
+or
+
+```bash
+fastapi run app/main.py
+```
+
+or 
+
+```bash
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8080
 ```

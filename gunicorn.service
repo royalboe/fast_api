@@ -1,0 +1,15 @@
+[Unit]
+Description=gunicorn daemon for FastAPI application
+Documentation=https://docs.gunicorn.org/en/stable/
+After=network.target
+
+[Service]
+User=fastapi
+Group=fastapi
+WorkingDirectory=/home/fastapi/app/src
+Environment="PATH=/home/fastapi/app/venv/bin"
+ExecStart=/home/fastapi/venv/bin/gunicorn --workers 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+
+[Install]
+WantedBy=multi-user.target
+# End of gunicorn.service
