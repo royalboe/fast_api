@@ -8,6 +8,7 @@ User=fastapi
 Group=fastapi
 WorkingDirectory=/home/fastapi/app/src
 Environment="PATH=/home/fastapi/app/venv/bin"
+EnvironmentFile=/home/fastapi/.env
 ExecStart=/home/fastapi/venv/bin/gunicorn --workers 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
 
 [Install]
