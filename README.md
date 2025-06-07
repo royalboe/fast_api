@@ -266,3 +266,9 @@ or
 ```bash
 gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8080
 ```
+
+Make a service for the file
+
+```bash
+sudo cp gunicorn.service /etc/systemd/systemfastapi.service
+```
