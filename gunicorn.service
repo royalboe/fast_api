@@ -7,10 +7,10 @@ After=network.target
 User=fastapi
 Group=fastapi
 WorkingDirectory=/home/fastapi/app/src
-Environment="PATH=/home/fastapi/app/venv/bin"
+Environment="PATH=/home/fastapi/app/fastenv/bin"
 EnvironmentFile=/home/fastapi/.env
-ExecStart=/home/fastapi/app/venv/bin/gunicorn --workers 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
-
+ExecStart=/home/fastapi/app/fastenv/bin/gunicorn --workers 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+Restart=always
 [Install]
 WantedBy=multi-user.target
 # End of gunicorn.service

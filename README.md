@@ -164,9 +164,7 @@ Run the following commands in the ubuntu machine
 sudo apt update && sudo apt upgrade -y
 sudo apt install libpq-dev -y
 sudo apt install python3-pip -y
-
 sudo apt install python3-virtualenv -y
-
 sudo apt install postgresql postgresql-contrib -y
 ```
 
@@ -198,7 +196,7 @@ Go back to root user
 exit
 ```
 
-in root user, make adjustments to postgresql.conf file to allow remote connections
+in root user, make adjustments to postgresql.conf file to allow remote connections, change peer to md5
 
 ```bash
 vi /etc/postgresql/<version>/main/postgresql.conf
@@ -220,14 +218,15 @@ usermod -aG sudo fastapi
 Create a folder and add a virtual environment
 
 ```bash
-virtualenv fastienv
+mkdir app
+virtualenv fastenv
 source fastenv/bin/activate
 ```
 
 Clone the project
 
 ```bash
-git clone https://github.com/royalboe/fast_api.git
+git clone https://github.com/royalboe/fast_api.git .
 ```
 
 Install dependencies
@@ -270,5 +269,5 @@ gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8080
 Make a service for the file
 
 ```bash
-sudo cp gunicorn.service /etc/systemd/systemfastapi.service
+sudo cp gunicorn.service /etc/systemd/system/fastapi.service
 ```
