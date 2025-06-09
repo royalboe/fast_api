@@ -271,3 +271,34 @@ Make a service for the file
 ```bash
 sudo cp gunicorn.service /etc/systemd/system/fastapi.service
 ```
+
+Install nginx and use the cofiguaration file in the repo
+
+```bash
+sudo apt install nginx -y
+```
+
+TLS encryption
+
+```bash
+sudo snap install --classic certbot
+sudo certbot --nginx
+```
+
+Firewall
+
+```bash
+sudo ufw allow http
+sudo ufw allow 8000
+sudo ufw allow https
+sudo ufw allow ssh
+sudo ufw allow 5432
+sudo ufw enable
+sudo ufw status
+```
+
+To delete
+
+```bash
+sudo ufw delete allow 8000
+```
