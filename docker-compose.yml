@@ -17,17 +17,7 @@ services:
           target: /usr/src/app
         - action: rebuild
           path: ./requirements.txt
-    command: ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "80"]
-    environment:
-      - DB_NAME=fastapi_db
-      - DB_PASSWORD=postgres
-      - DB_PORT=5432
-      - DB_HOST=db
-      - DB_USER=postgres
-      - TABLE_NAME=posts
-      - SECRET_KEY=My27gdybfb0prj8t59u5gbvkdnpqjr0358t94h8ygq3f4f1yo3uwhgihjrwerehfirg3q8779348rfqeikbvcyjqeytfr7834ho3l
-      - ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=60  
+    command: ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "80"] 
 
   db:
     image: postgres:latest
