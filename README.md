@@ -302,3 +302,35 @@ To delete
 ```bash
 sudo ufw delete allow 8000
 ```
+
+## Docker
+
+Used docker compose watch to make changes in development
+
+```bash
+docker-compose -f docker-compose-dev.yml --build --watch
+```
+
+## For testing
+
+Install pytest
+
+```bash
+pip install pytest
+```
+
+use pytest to run tests; make sure tests have the test_ prefix to get automatically detected. Also the -v is to list the passed tests.
+To see printing statements add -s option and -x to stop after the first failure.
+
+```bash
+pytest -v
+```
+
+```bash
+pytest --disable-warnings
+```
+
+```bash
+pytest -v --disable-warnings -x -s
+```
+
