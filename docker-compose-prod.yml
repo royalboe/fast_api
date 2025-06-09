@@ -1,0 +1,33 @@
+version: '3.9'
+services:
+  api:
+    image: royalboe/fastapi:latest
+    ports:
+      - "80:80"
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+    environment:
+      - DB_NAME={{DB_NAME}}
+      - DB_PASSWORD={{DB_PASSWORD}}
+      - DB_PORT={{DB_PORT}}
+      - DB_HOST={{DB_HOST}}
+      - DB_USER={{DB_USER}}
+      - TABLE_NAME={{TABLE_NAME}}
+      - SECRET_KEY={{SECRET_KEY}}
+      - AlGORITHM={{ALGORITHM}}
+      - ACCESS_TOKEN_EXPIRE_MINUTES={{ACCESS_TOKEN_EXPIRE_MINUTES}} 
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: {{DB_NAME}}
+      POSTGRES_USER: {{DB_USER}}
+      POSTGRES_PASSWORD: {{DB_PASSWORD}}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

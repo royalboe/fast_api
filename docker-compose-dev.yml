@@ -17,7 +17,8 @@ services:
           target: /usr/src/app
         - action: rebuild
           path: ./requirements.txt
-    command: ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "80"] 
+    command: ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "80"]
+       
 
   db:
     image: postgres:latest
