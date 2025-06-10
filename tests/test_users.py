@@ -1,4 +1,4 @@
-from .test_database import client, session  # Import the client and session fixtures
+# from .test_database import client, session  # Import the client and session fixtures
 from app.schema.schema import UserResponse
 from app.schema.auth_schema import AuthResponse
 from app.config import settings
