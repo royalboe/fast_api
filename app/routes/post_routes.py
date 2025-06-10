@@ -61,6 +61,7 @@ def get_my_posts(
         select(PostModel)
         .where(PostModel.author_id == current_user.id)
         .filter(PostModel.title.contains(search))
+        .order_by(PostModel.id.desc())
         .offset(offset)
         .limit(limit)
     )
@@ -100,6 +101,8 @@ def create_post(session: SessionDep, payload: PostCreate, current_user: UserMode
     """
     Create a new blog post with the given title and content.
     The post is validated using Pydantic and added to the in-memory storage.
+    Returns the created post with its ID and timestamps.
+    Raises a 500 error if there is a database error.
     """
     try:
         # post = PostModel(**payload.model_dump(exclude_unset=True))  # Unpack the payload into the model
@@ -143,12 +146,14 @@ def delete_post(post_id: int, session: SessionDep, current_user: UserModel = Dep
     if not deleted_post:
         # Raise 404 if post doesn't exist
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {post_id} not found")
-    # if deleted_post.author_id != current_user.id:
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
+    if deleted_post.author_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
     try:
         session.delete(deleted_post)
         session.commit()  # Commit the deletion  
     except Exception as e:
+        # Handle any database errors
+        session.rollback()
         print(f"Error deleting post: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")  
 
@@ -174,20 +179,22 @@ def update_post(post_id: int, payload: PostUpdate, session: SessionDep, current_
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to perform requested action"
             )
-        print(current_user)
         update_data = payload.model_dump(exclude_unset=True)
         extra_data = {'updated_at': datetime.now().isoformat()}
         # Update the fields of the post
-        updated_post.sqlmodel_update(update_data, update=extra_data)
+        # updated_post.sqlmodel_update(update_data, update=extra_data) # Outdated method, use setattr instead
+        update_data.update(extra_data)
 
-        # for field, value in update_data.items():
-        #     setattr(updated_post, field, value)
+        for field, value in update_data.items():
+            setattr(updated_post, field, value)
         session.add(updated_post)
         session.commit()
         session.refresh(updated_post)
     except HTTPException:
         raise
     except Exception as e:
+        # Handle any database errors
+        session.rollback()
         print(f"Error updating post: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
