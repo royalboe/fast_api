@@ -28,9 +28,17 @@ def verify_access_token(token: str, credentials_exception) -> TokenData:
   try:
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     user_id = payload.get("user_id")
+    exp = payload.get("exp")
     if user_id is None:
       raise credentials_exception
     
+    if exp is None or datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(timezone.utc):
+      print("Token has expired")
+      raise HTTPException(
+        status_code=status.HTTP_403_UNAUTHORIZED,
+        detail="Token has expired",
+        headers={"WWW-Authenticate": "Bearer"},
+      )
     return TokenData(id=user_id)
   except JWTError as e:
     print(e)
