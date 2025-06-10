@@ -31,11 +31,12 @@ def get_posts(
                 select(PostModel, func.count(VoteModel.post_id).label("votes"))
                 .join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True)
                 .group_by(PostModel.id).filter(PostModel.title.contains(search))
+                .order_by(PostModel.id.desc())
                 .offset(offset)
                 .limit(limit)
                 )
         else:
-            statement = select(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).offset(offset).limit(limit)
+            statement = select(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).order_by(PostModel.id.desc()).offset(offset).limit(limit)
         # print(statement)
         posts = session.exec(statement).all()
         
