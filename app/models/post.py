@@ -8,8 +8,8 @@ if TYPE_CHECKING:
   from app.models.user import User
 
 class PostBase(SQLModel):
-  title: str = Field(nullable=False, index=True)
-  content: str  = Field(nullable=False)
+  title: str = Field(nullable=False, index=True, unique=True, min_length=5, max_length=100)
+  content: str  = Field(nullable=False, min_length=5, max_length=5000)
   published: bool | None = Field(
     default=True,
     sa_column=Column(Boolean, server_default=text("true"))
