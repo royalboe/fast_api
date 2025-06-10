@@ -7,30 +7,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 
-@pytest.fixture()
-def test_user(client: TestClient):
-    """Fixture to create a test user in the database."""
-    user_data = {
-        "email": "test@email.com",
-        "password": "Testing123",
-        "username": "testuser"
-    }
-
-    res = client.post(
-        "api/users/",
-        json=user_data
-    )
-
-    assert res.status_code == 201
-    new_user = res.json()
-    print(new_user)
-    # assert new_user["email"] == user_data['email']
-    
-    new_user["password"] = user_data['password'] 
-    print(new_user) # Ensure password is set for login
-    return new_user
-
-
 # Uncomment the following test if you want to test the root endpoint
 @pytest.mark.skip(reason="Skipping root endpoint test for now")
 def test_root_endpoint(client: TestClient):
@@ -87,3 +63,35 @@ def test_user_login(client: TestClient, test_user: dict):
     assert response.status_code == 200
     assert "access_token" in response.json()
 
+def test_token_error(client: TestClient, test_user: dict):
+    """Test token error handling.
+    This test uses a fixture to create a session and ensures that the user receives an error when trying to access a protected endpoint without a valid token.
+    """
+    response = client.get("api/posts/")
+    assert response.status_code == 401
+    assert response.json() == {'detail': 'Not authenticated'}
+
+
+@pytest.mark.parametrize("email, password, status_code", [
+    ('wrongemail@email.com', 'testing123', 401),
+    ('test@email.com', 'wrongpassword', 401),
+    ('XXXXXXXXXXXXXXXXXXXX', 'wrongpassword', 401),
+    (None, 'password123', 422),
+    ('test@email.com', None, 422)
+])
+def test_invalid_credentials(client: TestClient, test_user: dict, email, password, status_code):
+    """Test invalid credentials error handling.
+    This test uses a fixture to create a session and ensures that the user receives an error when trying to log in with invalid credentials.
+    """
+    user_data = {
+        "username": email,
+        "password": password
+    }
+
+    response = client.post(
+        "api/auth/login/",
+        data=user_data
+    )
+
+    assert response.status_code == status_code
+    # assert response.json() == {'detail': 'Invalid credentials'}
