@@ -14,6 +14,13 @@ def create_vote(vote: VoteBase, session: SessionDep, current_user=Depends(get_cu
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     
+    if post.author_id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot vote on your own post")
+    
+    if vote.dir not in [0, 1]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid vote direction. Must be 0 or 1")
+
+
     statement = select(Vote).filter(Vote.post_id == vote.post_id, Vote.user_id == current_user.id)
 
     result = session.exec(statement).first()
