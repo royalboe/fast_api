@@ -42,6 +42,27 @@ def test_user(client: TestClient):
     new_user["password"] = user_data['password'] 
     return new_user
 
+@pytest.fixture(name="test_user2")
+def test_user2(client: TestClient):
+    """Fixture to create another test user in the database."""
+    user_data = {
+        "email": "test2@email.com",
+        "password": "Testing12345",
+        "username": "Test user 2"
+    }
+
+    res = client.post(
+        "api/users/",
+        json=user_data
+    )
+
+    assert res.status_code == 201
+    new_user = res.json()
+    # assert new_user["email"] == user_data['email']
+
+    new_user["password"] = user_data['password']
+    return new_user
+
 @pytest.fixture(name="session")
 def test_session():
     """Fixture to create a test database session."""
@@ -78,7 +99,7 @@ def token(test_user):
 
 
 @pytest.fixture(name="test_posts")
-def test_posts(session: Session, test_user: dict):
+def test_posts(session: Session, test_user: dict, test_user2: dict):
     """Fixture to create test posts in the database."""
     posts_data: list = [
         {
@@ -94,12 +115,12 @@ def test_posts(session: Session, test_user: dict):
         {
             "title": "Test Post Two",
             "content": "This is a test post 2.",
-            "author_id": test_user['id']
+            "author_id": test_user2['id']
         },
         {
             "title": "Test Post Three",
             "content": "This is a test post 3.",
-            "author_id": test_user['id']
+            "author_id": test_user2['id']
             }
         ]
     
@@ -112,5 +133,3 @@ def test_posts(session: Session, test_user: dict):
 
     posts = session.exec(select(PostModel).order_by(PostModel.id.desc())).all()
     return posts
-
-
