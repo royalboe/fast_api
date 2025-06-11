@@ -8,7 +8,7 @@ from typing import List, Optional
 from ..models.post import Post as PostModel
 from ..models.user import User as UserModel
 from ..models.votes import Vote as VoteModel
-from ..schema.schema import PostCreate, PostUpdate, PostResponseWithUser, PostWithVotesSchema
+from ..schema.schema import PostCreate, PostUpdate, PostResponse, PostWithVotesSchema
 from ..utils.dependencies import SessionDep
 
 router = APIRouter()
@@ -45,7 +45,7 @@ def get_posts(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
     return posts
 
-@router.get("/user-posts", response_model=List[PostResponseWithUser])
+@router.get("/user-posts", response_model=List[PostResponse])
 def get_my_posts(
     session:SessionDep, 
     current_user: UserModel = Depends(get_current_user),
@@ -96,7 +96,7 @@ def get_post(post_id: int, session: SessionDep, current_user: UserModel = Depend
     return post
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponseWithUser)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
 def create_post(session: SessionDep, payload: PostCreate, current_user: UserModel = Depends(get_current_user)):
     """
     Create a new blog post with the given title and content.
@@ -116,7 +116,7 @@ def create_post(session: SessionDep, payload: PostCreate, current_user: UserMode
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database error")
     return post
 
-@router.get("/latest/recent", response_model=PostResponseWithUser)
+@router.get("/latest/recent", response_model=PostResponse)
 def get_latest_post(session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Get the latest (most recently added) post.
@@ -160,7 +160,7 @@ def delete_post(post_id: int, session: SessionDep, current_user: UserModel = Dep
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.put("/{post_id}", response_model=PostResponseWithUser, status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{post_id}", response_model=PostResponse, status_code=status.HTTP_202_ACCEPTED)
 def update_post(post_id: int, payload: PostUpdate, session: SessionDep, current_user: UserModel = Depends(get_current_user)):
     """
     Update an existing post by its unique ID using partial data.

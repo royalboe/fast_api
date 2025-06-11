@@ -20,6 +20,7 @@ class PostResponse(PostBase):
     created_at: datetime
     updated_at: datetime
     author_id: int
+    author: UserResponse | None = None
 
 class PostUpdate(PostBase):
     updated_at: datetime | None = Field(default=datetime.now().isoformat())
@@ -52,5 +53,5 @@ class UserResponseWithPosts(UserResponse):
     posts: list[PostResponse] = []
 
 class PostWithVotesSchema(SQLModel):
-    Post: PostResponseWithUser
+    Post: PostResponse
     votes: int
