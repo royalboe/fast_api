@@ -1,18 +1,25 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.11-slim-bookworm AS builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY requirements.txt ./
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+# Install build tools and dependencies temporarily
+RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
+    && pip install --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && apt-get purge -y build-essential libpq-dev \
+    && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy full app into new image with only Python + dependencies
+FROM python:3.11-slim-bookworm
 
+WORKDIR /app
+
+COPY --from=builder /usr/local /usr/local
 COPY . .
 
-CMD ["fastapi", "run", "app/main.py", "--port", "80"]
-
-# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
