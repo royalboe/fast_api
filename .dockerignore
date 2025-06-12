@@ -5,6 +5,10 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+.ruff_cache/
+
+# Virtual environments
+venv/
 
 # Editor and IDE
 .vscode/
@@ -28,3 +32,4 @@ nginx/
 # Docs and tests
 README.md
 tests/
+
