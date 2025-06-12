@@ -13,7 +13,7 @@ password = quote_plus(settings.db_password)
 user = settings.db_user
 host = settings.db_host
 port = settings.db_port
-db = "test_db"
+db = f"{settings.db_name}_test"
 DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
 # Conftest is a configuration file for pytest that sets up fixtures and configurations for testing.

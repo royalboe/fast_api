@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 
 # Uncomment the following test if you want to test the root endpoint
-@pytest.mark.skip(reason="Skipping root endpoint test for now")
+# @pytest.mark.skip(reason="Skipping root endpoint test for now")
 def test_root_endpoint(client: TestClient):
     """Test the root endpoint of the API."""
     response = client.get("/")
