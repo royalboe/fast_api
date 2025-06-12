@@ -11,7 +11,7 @@ def fixture_first_vote(authorized_client: TestClient, test_posts, test_user):
         "post_id": post.id,
         "dir": 1
     }
-    authorized_client.post(f"/api/vote/", json=payload)
+    authorized_client.post("/api/vote/", json=payload)
     return post
 
 def test_vote_on_others_post(authorized_client: TestClient, test_posts, test_user):
@@ -23,7 +23,7 @@ def test_vote_on_others_post(authorized_client: TestClient, test_posts, test_use
         "post_id": post_id,
         "dir": 1
     }
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 201
     data = res.json()
     assert data['message'] == "Successfully upvoted post"
@@ -37,7 +37,7 @@ def test_vote_on_own_post(authorized_client: TestClient, test_posts, test_user):
         "post_id": post_id,
         "dir": 1
     }
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 403
     data = res.json()
     assert data['detail'] == "You cannot vote on your own post"
@@ -49,7 +49,7 @@ def test_vote_on_post_not_exist(authorized_client: TestClient):
         "post_id": 99999999,
         "dir": 1
     }
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 404
     data = res.json()
     assert data['detail'] == "Post not found"
@@ -64,7 +64,7 @@ def test_vote_on_post(authorized_client: TestClient, test_posts, test_user):
         "post_id": post_id,
         "dir": 1
     }
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 201
     data = res.json()
     assert data['message'] == "Successfully upvoted post"
@@ -79,7 +79,7 @@ def test_vote_on_post_already_voted(authorized_client: TestClient, first_vote):
     }
 
     # Second vote should raise conflict
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 409
     data = res.json()
     assert data['detail'] == "You have already upvoted this post"
@@ -93,7 +93,7 @@ def test_vote_on_post_downvote(authorized_client: TestClient, test_posts, first_
         "post_id": post_id,
         "dir": 0
     }
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 201
     data = res.json()
     assert data['message'] == "Successfully downvoted post."
@@ -105,7 +105,7 @@ def test_vote_on_post_downvote_not_exist(authorized_client: TestClient, test_pos
         "post_id": 000000000000000,
         "dir": 0
     }
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 404
     data = res.json()
     assert data['detail'] == "Post not found"
@@ -119,7 +119,7 @@ def test_vote_on_post_downvote_already_downvoted(authorized_client: TestClient, 
         "post_id": post_id,
         "dir": 0
     }
-    res = authorized_client.post(f"/api/vote/", json=payload)
+    res = authorized_client.post("/api/vote/", json=payload)
     assert res.status_code == 404
     data = res.json()
     assert data['detail'] == "Post not found"
@@ -132,6 +132,6 @@ def test_vote_unauthorized_user_vote(client: TestClient, test_posts):
         "post_id": post_id,
         "dir": 1
     }
-    res = client.post(f"/api/vote/", json=payload)
+    res = client.post("/api/vote/", json=payload)
     assert res.status_code == 401
     assert res.json() == {'detail': 'Not authenticated'}

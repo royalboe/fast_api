@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
 from .utils.dependencies import SessionDep
-from .database import create_db_and_tables
 from .routes.post_routes import router as post_router
 from .routes.users_routes import router as user_router
 from .routes.auth_routes import router as auth_router

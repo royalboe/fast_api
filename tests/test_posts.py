@@ -75,7 +75,7 @@ def test_authorised_user_create_post(authorized_client: TestClient, test_user, t
     assert res.status_code == status_code
     assert post_model.title == title
     assert post_model.content == content
-    assert post_model.published == True
+    assert post_model.published
     assert post_model.author_id == test_user['id']
 
 def test_authorised_user_create_post_with_empty_title(authorized_client: TestClient, test_user):

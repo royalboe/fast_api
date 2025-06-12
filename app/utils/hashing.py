@@ -1,5 +1,6 @@
 # Using argon2 for hashing passwords
 from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError, VerificationError
 
 ph = PasswordHasher()
 
@@ -11,7 +12,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain-text password against a hashed password."""
     try:
         return ph.verify(hashed_password, plain_password)
-    except:
+    except (VerifyMismatchError, VerificationError) as e:
+        # If the password does not match, an exception is raised
+        print(f"Password verification failed: {e}")
+        # Return False to indicate the password does not match
         return False
 
 

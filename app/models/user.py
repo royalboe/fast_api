@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import Column, DateTime, text
 from sqlmodel import Field, SQLModel, Relationship

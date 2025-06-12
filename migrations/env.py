@@ -1,10 +1,6 @@
 from logging.config import fileConfig
-from urllib.parse import quote_plus
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from app.models.votes import Vote
-from app.models.user import User
-from app.models.post import Post
 from app.config import settings
 from app.models import metadata
 
