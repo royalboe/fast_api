@@ -168,12 +168,10 @@ jobs:
       - name: Check if Heroku Postgres exists
         id: check_db
         run: |
-          if heroku pg:info --app ${{ secrets.HEROKU_APP_NAME }} > /dev/null 2>&1; then
-            echo "Heroku Postgres exists."
-            echo "db_exists=true" >> $GITHUB_OUTPUT
+          if heroku addons --app ${{ secrets.HEROKU_APP_NAME }} | grep -q "heroku-postgresql"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "Heroku Postgres does not exist."
-            echo "db_exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
       
       - name: Create Heroku Postgres database
