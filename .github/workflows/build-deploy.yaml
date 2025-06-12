@@ -34,6 +34,7 @@ jobs:
        name: dev 
     env:
       DB_NAME: ${{ secrets.DB_NAME }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_HOST: ${{ secrets.DB_HOST }}
@@ -189,3 +190,7 @@ jobs:
       - name: migrate database
         run: |
           heroku run alembic upgrade head --app ${{ secrets.HEROKU_APP_NAME }}
+
+      - name: Restart Heroku app
+        run: |
+          heroku ps:restart --app ${{ secrets.HEROKU_APP_NAME }}
