@@ -29,7 +29,7 @@ def test_vote_on_others_post(authorized_client: TestClient, test_posts, test_use
     assert data['message'] == "Successfully upvoted post"
 
 def test_vote_on_own_post(authorized_client: TestClient, test_posts, test_user):
-    """Test voting on own post should raise 403 error."""
+    """Test voting on own post should raise 403 error. """
     
     post = next((post for post in test_posts if post.author_id == test_user['id']), None)
     post_id = post.id
