@@ -97,8 +97,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Slim_Dockerfile
+          file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:${{ matrix.python-version }}_slim
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:${{ matrix.python-version }}
           cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:cache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:cache,mode=max
