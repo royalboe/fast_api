@@ -84,10 +84,14 @@ jobs:
           path: junit/test-results-${{ matrix.python-version }}.xml
 
   build-docker:
+    needs: test
     environment: 
        name: dev
     runs-on: ubuntu-latest
-    needs: test
+    strategy:
+      matrix:
+        python-version: [3.13.1, 3.11, 3.12]
+    
     steps: 
       - name: Login to DockerHub
         uses: docker/login-action@v3
