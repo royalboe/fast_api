@@ -1,0 +1,30 @@
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Editor and IDE
+.vscode/
+*.swp
+
+# Git and GitHub
+.git/
+.github/
+.gitignore
+
+# Environment/config
+.env
+*.env
+
+# Docker-related
+docker-compose.yml
+gunicorn.service
+Procfile
+nginx/
+
+# Docs and tests
+README.md
+tests/

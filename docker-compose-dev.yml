@@ -1,15 +1,17 @@
 version: '3.9'
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     ports:
-      - "8000:80"
+      - "8000:8000"
     env_file:
       - ./.env
     depends_on:
       - db
-    # volumes:
-    #   - ./:/usr/src/app:ro
+    volumes:
+      - ./:/usr/src/app:ro
     develop:
       watch:
         - action: sync
@@ -17,15 +19,16 @@ services:
           target: /usr/src/app
         - action: rebuild
           path: ./requirements.txt
-    command: ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "80"]
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"] 
+    # command: ["fastapi", "dev", "app/main.py", "--host", "0.0.0.0", "--port", "80"]
        
 
   db:
     image: postgres:latest
     environment:
-      POSTGRES_DB: fastapi_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
