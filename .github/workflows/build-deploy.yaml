@@ -1,0 +1,29 @@
+name: Build and Deploy Code
+
+on:
+  push:
+    branches:
+      - actions
+  pull_request:
+    branches:
+      - actions
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.13.1'
+
+      - name: Cache Python packages
+        run: echo "Hello Ayomide"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
