@@ -99,6 +99,6 @@ jobs:
           context: .
           file: Slim_Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fastapi:${{ matrix.python-version }}_slim
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/fastapi:cache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/fastapi:cache,mode=max
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:${{ matrix.python-version }}_slim
+          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:cache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:cache,mode=max
