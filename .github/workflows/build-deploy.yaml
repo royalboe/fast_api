@@ -149,7 +149,7 @@ jobs:
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
           echo "heroku" >> $GITHUB_PATH
-        
+
       - name: Login to Heroku
         uses: akhileshns/heroku-deploy@v3.14.15
         with:
