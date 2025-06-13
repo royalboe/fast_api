@@ -154,41 +154,7 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           app_name: ${{ secrets.HEROKU_APP_NAME }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          TABLE_NAME: ${{ secrets.TABLE_NAME }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          ALGORITHM: ${{ secrets.ALGORITHM }}
-          ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
-      
-      - name: Check if Heroku Postgres exists
-        id: check_db
-        run: |
-          if heroku addons --app ${{ secrets.HEROKU_APP_NAME }} | grep -q "heroku-postgresql"; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Create Heroku Postgres database
-        if: steps.check_db.outputs.db_exists == 'false'
-        run: |
-          heroku addons:create heroku-postgresql:essential-0 --app ${{ secrets.HEROKU_APP_NAME }}
-      
-      - name: Wait for DB to be ready
-        if: steps.check_db.outputs.db_exists == 'false'
-        run: |
-          echo "Waiting 100s for DB setup..."
-          sleep 100
-          heroku pg:wait --app ${{ secrets.HEROKU_APP_NAME }}
-      - name: migrate database
-        run: |
-          heroku run alembic upgrade head --app ${{ secrets.HEROKU_APP_NAME }}
 
-      - name: Restart Heroku app
-        run: |
-          heroku ps:restart --app ${{ secrets.HEROKU_APP_NAME }}
+      # - name: Restart Heroku app
+      #   run: |
+      #     heroku ps:restart --app ${{ secrets.HEROKU_APP_NAME }}

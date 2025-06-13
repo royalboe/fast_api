@@ -47,7 +47,7 @@ def root():
     """
     Root route returns a simple welcome message.
     """
-    return {"message": "Welcome to my API"}
+    return {"message": "Welcome to my API - Deployment on HEROKU"}
 
 # Include the routes
 
