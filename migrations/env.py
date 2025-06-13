@@ -12,8 +12,8 @@ user = settings.db_user
 host = settings.db_host
 port = settings.db_port
 db = settings.db_name
-DATABASE_URL = settings.database_url
-# DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
+# DATABASE_URL = settings.database_url
+DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
